@@ -2,12 +2,11 @@ version: '2.1'
 
 services:
 
-
   payroll-db:
     container_name: payroll-db
     build: https://github.com/iDenco/hmr-payroll.git#master:project/db
     ports:
-      - 5435:5432  # expose ports - HOST:CONTAINER
+        - 5435:5432  # expose ports - HOST:CONTAINER
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -17,17 +16,18 @@ services:
   payroll-service:
     container_name: payroll-service
     build: https://github.com/iDenco/hmr-payroll.git
-    ports:
-      - 5001:5000 # expose ports - HOST:CONTAINER
+    expose:
+      - '5000'
     environment:
-      - APP_SETTINGS=project.config.DevelopmentConfig
-      - DATABASE_URL=postgres://postgres:postgres@payroll-db:5432/payroll_dev
+      - APP_SETTINGS=project.config.ProductionConfig
+      - DATABASE_URL=postgres://postgres:postgres@payroll-db:5432/payroll_prod
       - DATABASE_TEST_URL=postgres://postgres:postgres@payroll-db:5432/payroll_test
     depends_on:
       payroll-db:
         condition: service_healthy
     links:
       - payroll-db
+    command: gunicorn -b 0.0.0.0:5000 manage:app
 
   nginx:
     container_name: nginx
@@ -46,12 +46,13 @@ services:
 
   web-service:
     container_name: web-service
-    build: https://github.com/iDenco/hmr-client.git
+    build:
+      context: https://github.com/iDenco/hmr-client.git
+      args:
+        - NODE_ENV=development
+        - REACT_APP_PAYROLL_SERVICE_URL=${REACT_APP_PAYROLL_SERVICE_URL}
     ports:
-      - '3007:3000' # expose ports - HOST:CONTAINER
-    environment:
-      - NODE_ENV=development
-      - REACT_APP_PAYROLL_SERVICE_URL=${REACT_APP_PAYROLL_SERVICE_URL}
+      - '9000:9000' # expose ports - HOST:CONTAINER
     depends_on:
       payroll-service:
         condition: service_started
