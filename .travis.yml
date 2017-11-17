@@ -1,5 +1,5 @@
 language: node_js
-node_js: '7'
+node_js: 'stable'
 
 before_install:
   - stty cols 80
@@ -26,6 +26,7 @@ before_install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
+  - npm install -g testcafe
 
 before_script:
   - export TEST_URL=http://127.0.0.1
