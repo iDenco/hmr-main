@@ -11,6 +11,9 @@ inspect() {
 docker-compose run payroll-service python manage.py test
 inspect $? payroll-service
 
+testcafe chrome e2e
+inspect $? e2e
+
 if [ -n "${fails}" ];
   then
     echo "Tests failed: ${fails}"
