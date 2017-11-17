@@ -22,6 +22,7 @@ services:
       - APP_SETTINGS=project.config.ProductionConfig
       - DATABASE_URL=postgres://postgres:postgres@payroll-db:5432/payroll_prod
       - DATABASE_TEST_URL=postgres://postgres:postgres@payroll-db:5432/payroll_test
+      - SECRET_KEY=${SECRET_KEY}
     depends_on:
       payroll-db:
         condition: service_healthy
