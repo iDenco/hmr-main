@@ -4,13 +4,17 @@ import {
 	TEST_URL,
 	newUsername,
 	newEmail,
+	newPassword,
 	shouldDisplayAuthForm,
 	registerUser,
-	rootPathDisplayedProperly
+	rootPathDisplayedProperly,
+	userRegistrationFailed,
+	flashFailedMessage
 } from './helpers'
 
 const username = newUsername()
 const email = newEmail(username)
+const password = newPassword()
 
 fixture('/register').page(`${TEST_URL}/register`)
 
@@ -19,6 +23,18 @@ test(`should display the registration form`, async t => {
 })
 
 test(`should allow a user to register`, async t => {
-	await registerUser(t, username, email)
+	await registerUser(t, username, email, '', '', password)
 	await rootPathDisplayedProperly(t, username, email)
+})
+
+test(`should throw an error if the username is taken`, async t => {
+	await registerUser(t, username, email, '', 'unique', password)
+	await userRegistrationFailed(t)
+	await flashFailedMessage(t, 'That user already exists.')
+})
+
+test(`should throw an error if the email is taken`, async t => {
+	await registerUser(t, username, email, 'unique', '', password)
+	await userRegistrationFailed(t)
+	await flashFailedMessage(t, 'That user already exists.')
 })
