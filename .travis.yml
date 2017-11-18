@@ -27,6 +27,7 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   - npm install -g testcafe
+  - npm install randomstring
 
 before_script:
   - export TEST_URL=http://127.0.0.1
