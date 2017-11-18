@@ -32,15 +32,16 @@ before_install:
 before_script:
   - export TEST_URL=http://127.0.0.1
   - export REACT_APP_PAYROLL_SERVICE_URL=http://127.0.0.1
+  - export SECRET_KEY=my_precious
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - sleep 3
-  - docker-compose up --build -d
+  - docker-compose -f docker-compose-staging.yml up -d --build
 
 script:
-  - docker-compose run payroll-service python manage.py test
-  - docker-compose run payroll-service python manage.py recreate_db
-  - testcafe chrome e2e/index.test.js
+  - docker-compose -f docker-compose-staging.yml run payroll-service python manage.py test
+  - docker-compose -f docker-compose-staging.yml run payroll-service python manage.py recreate_db
+  - testcafe chrome e2e
 
 after_script:
   - docker-compose down
