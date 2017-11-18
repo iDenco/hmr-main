@@ -38,6 +38,7 @@ before_script:
 
 script:
   - docker-compose run payroll-service python manage.py test
+  - docker-compose run payroll-service python manage.py recreate_db
   - testcafe chrome e2e/index.test.js
 
 after_script:

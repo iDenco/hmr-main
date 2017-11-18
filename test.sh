@@ -8,6 +8,7 @@ inspect() {
   fi
 }
 
+docker-compose run payroll-service python manage.py recreate_db
 docker-compose run payroll-service python manage.py test
 inspect $? payroll-service
 
