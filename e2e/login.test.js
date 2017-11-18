@@ -5,9 +5,10 @@ import {
 	registerUser,
 	logUserOut,
 	logUserIn,
-	shouldDisplayForm,
+	shouldDisplayAuthForm,
 	rootPathDisplayedProperly,
-	logOutPathDisplayProperly
+	logOutPathDisplayProperly,
+	validatePasswordField
 } from './helpers'
 
 const username = newUsername()
@@ -16,7 +17,7 @@ const email = newEmail(username)
 fixture('/login').page(`${TEST_URL}/login`)
 
 test(`should display the sign in form`, async t => {
-	await shouldDisplayForm(t, 'login', 'Login')
+	await shouldDisplayAuthForm(t, 'login', 'Login', 'Email must be greater than 5 characters.')
 })
 
 test(`should allow a user to sign in`, async t => {
@@ -26,4 +27,8 @@ test(`should allow a user to sign in`, async t => {
 	await rootPathDisplayedProperly(t, username, email)
 	await logUserOut(t)
 	await logOutPathDisplayProperly(t)
+})
+
+test(`should validate the password field`, async t => {
+	await validatePasswordField(t)
 })

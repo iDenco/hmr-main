@@ -1,8 +1,10 @@
 import { Selector } from 'testcafe'
 import randomstring from 'randomstring'
 
+const password = 'greaterthanten'
+
 export const newUsername = () => {
-	return randomstring.generate()
+	return randomstring.generate(8)
 }
 
 export const newEmail = username => {
@@ -11,12 +13,22 @@ export const newEmail = username => {
 
 export const TEST_URL = process.env.TEST_URL
 
-export const shouldDisplayForm = async (t, path, title) => {
+export const shouldDisplayAuthForm = async (t, path, title, validationErrorMsg) => {
 	await t
 		.navigateTo(`${TEST_URL}/${path}`)
 		.expect(Selector('H1').withText(title).exists)
 		.ok()
 		.expect(Selector('form').exists)
+		.ok()
+		.expect(Selector('input[disabled]').exists)
+		.ok()
+		.expect(Selector('.validation-list').exists)
+		.ok()
+		.expect(
+			Selector('.validation-list > .error')
+				.nth(0)
+				.withText(validationErrorMsg).exists
+		)
 		.ok()
 }
 
@@ -25,7 +37,7 @@ export const registerUser = async (t, username, email) => {
 		.navigateTo(`${TEST_URL}/register`)
 		.typeText('input[name="username"]', username)
 		.typeText('input[name="email"]', email)
-		.typeText('input[name="password"]', 'test')
+		.typeText('input[name="password"]', password)
 		.click(Selector('input[type="submit"]'))
 }
 
@@ -37,7 +49,7 @@ export const logUserIn = async (t, email) => {
 	await t
 		.navigateTo(`${TEST_URL}/login`)
 		.typeText('input[name="email"]', email)
-		.typeText('input[name="password"]', 'test')
+		.typeText('input[name="password"]', password)
 		.click(Selector('input[type="submit"]'))
 }
 
@@ -112,4 +124,36 @@ export const userStatusPageLoggedInDisplayedProperly = async (t, username, email
 		.notOk()
 		.expect(Selector('a').withText('Log In').exists)
 		.notOk()
+}
+
+export const validatePasswordField = async t => {
+	await t
+		.navigateTo(`${TEST_URL}/login`)
+		.expect(Selector('H1').withText('Login').exists)
+		.ok()
+		.expect(Selector('form').exists)
+		.ok()
+		.expect(Selector('input[disabled]').exists)
+		.ok()
+		.expect(
+			Selector('.validation-list > .error')
+				.nth(2)
+				.withText('Password must be greater than 10 characters.').exists
+		)
+		.ok()
+		.typeText('input[name="password"]', 'greaterthanten')
+		.expect(Selector('.validation-list').exists)
+		.ok()
+		.expect(
+			Selector('.validation-list > .error')
+				.nth(2)
+				.withText('Password must be greater than 10 characters.').exists
+		)
+		.notOk()
+		.expect(
+			Selector('.validation-list > .success')
+				.nth(0)
+				.withText('Password must be greater than 10 characters.').exists
+		)
+		.ok()
 }
