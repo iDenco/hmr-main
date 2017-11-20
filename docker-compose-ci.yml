@@ -1,0 +1,75 @@
+version: '2.1'
+
+services:
+
+  payroll-db:
+    container_name: payroll-db
+    build:
+      context: https://github.com/iDenco/hmr-payroll.git#master:project/db
+    ports:
+      - 5435:5432  # expose ports - HOST:CONTAINER
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: exit 0
+
+  payroll-service:
+    container_name: payroll-service
+    build:
+      context: https://github.com/iDenco/hmr-payroll.git
+    expose:
+      - '5000'
+    environment:
+      - APP_SETTINGS=project.config.StagingConfig
+      - DATABASE_URL=postgres://postgres:postgres@payroll-db:5432/payroll_staging
+      - DATABASE_TEST_URL=postgres://postgres:postgres@payroll-db:5432/payroll_test
+      - SECRET_KEY=${SECRET_KEY}
+    depends_on:
+      payroll-db:
+        condition: service_healthy
+    links:
+      - payroll-db
+    command: gunicorn -b 0.0.0.0:5000 manage:app
+
+  nginx:
+    container_name: nginx
+    build: ./nginx/
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      payroll-service:
+        condition: service_started
+      web-service:
+        condition: service_started
+    links:
+      - payroll-service
+      - web-service
+
+  web-service:
+    container_name: web-service
+    build:
+      context: https://github.com/iDenco/hmr-client.git
+      args:
+        - NODE_ENV=development
+        - REACT_APP_PAYROLL_SERVICE_URL=${REACT_APP_PAYROLL_SERVICE_URL}
+    ports:
+      - '9000:9000' # expose ports - HOST:CONTAINER
+    depends_on:
+      payroll-service:
+        condition: service_started
+    links:
+      - payroll-service
+
+  swagger:
+    container_name: swagger
+    build:
+      context: https://github.com/iDenco/hmr-swagger.git
+    ports:
+      - '8080:8080' # expose ports - HOST:CONTAINER
+    environment:
+      - API_URL=https://raw.githubusercontent.com/iDenco/hmr-swagger/master/swagger.jso
+    depends_on:
+      payroll-service:
+        condition: service_started

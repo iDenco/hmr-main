@@ -20,6 +20,9 @@ services:
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.11.2
+    - COMMIT=${TRAVIS_COMMIT::8}
+    - PAYROLL=hmr-payroll
+    - PAYROLL_REPO=https://github.com/realpython/$PAYROLL.git
 
 before_install:
   - sudo rm /usr/local/bin/docker-compose
@@ -45,3 +48,10 @@ script:
 
 after_script:
   - docker-compose down
+
+after_success:
+  - docker login -e $DOCKER_EMAIL -u $DOCKER_ID -p $DOCKER_PASSWORD
+  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
+  - docker build $PAYROLL_REPO -t $PAYROLL:$COMMIT
+  - docker tag $PAYROLL:$COMMIT $DOCKER_ID/$PAYROLL:$TAG
+  - docker push $DOCKER_ID/$PAYROLL
