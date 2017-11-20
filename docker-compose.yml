@@ -5,7 +5,7 @@ services:
 
   payroll-db:
     container_name: payroll-db
-    build: https://github.com/iDenco/hmr-payroll.git#master:project/db
+    build: ../hmr-payroll/project/db
     ports:
       - 5435:5432  # expose ports - HOST:CONTAINER
     environment:
@@ -16,7 +16,11 @@ services:
 
   payroll-service:
     container_name: payroll-service
-    build: https://github.com/iDenco/hmr-payroll.git
+    build: 
+      context: ../hmr-payroll
+      dockerfile: Dockerfile-local
+    volumes:
+      - '../hmr-payroll:/usr/src/app'
     ports:
       - 5001:5000 # expose ports - HOST:CONTAINER
     environment:
@@ -48,12 +52,16 @@ services:
   web-service:
     container_name: web-service
     build:
-      context: https://github.com/iDenco/hmr-client.git
-      args:
-        - NODE_ENV=development
-        - REACT_APP_PAYROLL_SERVICE_URL=${REACT_APP_PAYROLL_SERVICE_URL}
+      context: ../hmr-client
+      dockerfile: Dockerfile-local
+    volumes:
+      - '../hmr-client:/usr/src/app'
+      - '/usr/src/app/node_modules'
     ports:
       - '9000:9000' # expose ports - HOST:CONTAINER
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_PAYROLL_SERVICE_URL=${REACT_APP_PAYROLL_SERVICE_URL}
     depends_on:
       payroll-service:
         condition: service_started
