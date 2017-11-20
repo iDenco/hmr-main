@@ -69,7 +69,7 @@ services:
     ports:
       - '8080:8080' # expose ports - HOST:CONTAINER
     environment:
-      - API_URL=hhttps://raw.githubusercontent.com/iDenco/hmr-swagger/master/swagger.json
+      - API_URL=https://raw.githubusercontent.com/iDenco/hmr-swagger/master/swagger.json
     depends_on:
       payroll-service:
         condition: service_started
