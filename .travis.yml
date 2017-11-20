@@ -22,7 +22,9 @@ env:
     - DOCKER_COMPOSE_VERSION=1.11.2
     - COMMIT=${TRAVIS_COMMIT::8}
     - PAYROLL=hmr-payroll
-    - PAYROLL_REPO=https://github.com/realpython/$PAYROLL.git
+    - PAYROLL_REPO=https://github.com/iDenco/$PAYROLL.git
+    - PAYROLL_DB=hmr-payroll-payroll_db
+    - PAYROLL_DB_REPO=https://github.com/iDenco/$PAYROLL.git#master:project/db
 
 before_install:
   - sudo rm /usr/local/bin/docker-compose
