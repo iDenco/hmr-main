@@ -26,7 +26,7 @@ then
   if [ "$TRAVIS_BRANCH" == "staging" ]
   then
     export REACT_APP_PAYROLL_SERVICE_URL="TBD"
-    export SECRET_KEY="my_precious"
+    export SECRET_KEY="TBD"
   fi
 
   if [ "$TRAVIS_BRANCH" == "production" ]
