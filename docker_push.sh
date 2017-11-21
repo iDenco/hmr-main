@@ -23,6 +23,18 @@ then
     export REPO=$AWS_ACCOUNT_ID.dkr.ecr.ap-southeast-1.amazonaws.com
   fi
 
+  if [ "$TRAVIS_BRANCH" == "staging" ]
+  then
+    export REACT_APP_PAYROLL_SERVICE_URL="TBD"
+    export SECRET_KEY="TBD"
+  fi
+
+  if [ "$TRAVIS_BRANCH" == "production" ]
+  then
+    export REACT_APP_PAYROLL_SERVICE_URL="TBD"
+    export SECRET_KEY="TBD"
+  fi
+  
   if [ "$TRAVIS_BRANCH" == "development" ] || \
      [ "$TRAVIS_BRANCH" == "staging" ] || \
      [ "$TRAVIS_BRANCH" == "production" ]
