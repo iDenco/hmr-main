@@ -51,8 +51,8 @@ before_script:
   - bash ./docker_build.sh
 
 script:
-  - docker-compose -f docker-compose-staging.yml run payroll-service python manage.py test
-  - docker-compose -f docker-compose-staging.yml run payroll-service python manage.py recreate_db
+  - docker-compose -f docker-compose-ci.yml run payroll-service python manage.py test
+  - docker-compose -f docker-compose-ci.yml run payroll-service python manage.py recreate_db
   - testcafe chrome e2e
 
 after_script:
