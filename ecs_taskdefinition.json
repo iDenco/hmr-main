@@ -1,0 +1,73 @@
+{
+	"containerDefinitions": [
+		{
+			"name": "payroll-service",
+			"image": "%s.dkr.ecr.ap-southeast-1.amazonaws.com/hmr-payroll:staging",
+			"essential": true,
+			"memoryReservation": 300,
+			"cpu": 300,
+			"portMappings": [
+				{
+					"containerPort": 5000,
+					"hostPort": 80,
+					"protocol": "tcp"
+				}
+			],
+			"environment": [
+				{
+					"name": "APP_SETTINGS",
+					"value": "project.config.StagingConfig"
+				},
+				{
+					"name": "DATABASE_TEST_URL",
+					"value": "postgres://postgres:postgres@payroll-db:5432/payroll_test"
+				},
+				{
+					"name": "DATABASE_URL",
+					"value": "postgres://postgres:postgres@payroll-db:5432/payroll_staging"
+				},
+				{
+					"name": "SECRET_KEY",
+					"value": "my_precious"
+				}
+			],
+			"links": ["payroll-db"],
+			"logConfiguration": {
+				"logDriver": "awslogs",
+				"options": {
+					"awslogs-group": "hmr-staging",
+					"awslogs-region": "ap-southeast-1"
+				}
+			}
+		},
+		{
+			"name": "payroll-db",
+			"image": "%s.dkr.ecr.ap-southeast-1.amazonaws.com/hmr-payroll-payroll_db:staging",
+			"essential": true,
+			"memoryReservation": 300,
+			"cpu": 300,
+			"portMappings": [
+				{
+					"containerPort": 5432
+				}
+			],
+			"environment": [
+				{
+					"name": "POSTGRES_PASSWORD",
+					"value": "postgres"
+				},
+				{
+					"name": "POSTGRES_USER",
+					"value": "postgres"
+				}
+			],
+			"logConfiguration": {
+				"logDriver": "awslogs",
+				"options": {
+					"awslogs-group": "hmr-staging",
+					"awslogs-region": "ap-southeast-1"
+				}
+			}
+		}
+	]
+}
