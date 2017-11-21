@@ -1,21 +1,51 @@
 #!/bin/sh
 
-if [ "$TRAVIS_BRANCH" == "master" ]; then
-  - docker login -e $DOCKER_EMAIL -u $DOCKER_ID -p $DOCKER_PASSWORD
-  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
-  - docker build $PAYROLL_REPO -t $PAYROLL:$COMMIT
-  - docker tag $PAYROLL:$COMMIT $DOCKER_ID/$PAYROLL:$TAG
-  - docker push $DOCKER_ID/$PAYROLL
-  - docker build $PAYROLL_DB_REPO -t $PAYROLL_DB:$COMMIT
-  - docker tag $PAYROLL_DB:$COMMIT $DOCKER_ID/$PAYROLL_DB:$TAG
-  - docker push $DOCKER_ID/$PAYROLL_DB
-  - docker build $CLIENT_REPO -t $CLIENT:$COMMIT
-  - docker tag $CLIENT:$COMMIT $DOCKER_ID/$CLIENT:$TAG
-  - docker push $DOCKER_ID/$CLIENT
-  - docker build $SWAGGER_REPO -t $SWAGGER:$COMMIT
-  - docker tag $SWAGGER:$COMMIT $DOCKER_ID/$SWAGGER:$TAG
-  - docker push $DOCKER_ID/$SWAGGER
-  - docker build $NGINX_REPO -t $NGINX:$COMMIT
-  - docker tag $NGINX:$COMMIT $DOCKER_ID/$NGINX:$TAG
-  - docker push $DOCKER_ID/$NGINX
+if [ -z "$TRAVIS_PULL_REQUEST" ] || [ "$TRAVIS_PULL_REQUEST" == "false" ]
+then
+
+  if [ "$TRAVIS_BRANCH" == "development" ]
+  then
+    docker login -e $DOCKER_EMAIL -u $DOCKER_ID -p $DOCKER_PASSWORD
+    export TAG=$TRAVIS_BRANCH
+    export REPO=$DOCKER_ID
+  fi
+
+  if [ "$TRAVIS_BRANCH" == "staging" ] || \
+     [ "$TRAVIS_BRANCH" == "production" ]
+  then
+    curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+    unzip awscli-bundle.zip
+    ./awscli-bundle/install -b ~/bin/aws
+    export PATH=~/bin:$PATH
+    # add AWS_ACCOUNT_ID, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY env vars
+    eval $(aws ecr get-login --region us-east-1)
+    export TAG=$TRAVIS_BRANCH
+    export REPO=$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+  fi
+
+  if [ "$TRAVIS_BRANCH" == "development" ] || \
+     [ "$TRAVIS_BRANCH" == "staging" ] || \
+     [ "$TRAVIS_BRANCH" == "production" ]
+  then
+    # payroll
+    docker build $PAYROLL_REPO -t $PAYROLL:$COMMIT
+    docker tag $PAYROLL:$COMMIT $REPO/$PAYROLL:$TAG
+    docker push $REPO/$PAYROLL:$TAG
+    # payroll db
+    docker build $PAYROLL_DB_REPO -t $PAYROLL_DB:$COMMIT
+    docker tag $PAYROLL_DB:$COMMIT $REPO/$PAYROLL_DB:$TAG
+    docker push $REPO/$PAYROLL_DB:$TAG
+    # client
+    docker build $CLIENT_REPO -t $CLIENT:$COMMIT
+    docker tag $CLIENT:$COMMIT $REPO/$CLIENT:$TAG
+    docker push $REPO/$CLIENT:$TAG
+    # swagger
+    docker build $SWAGGER_REPO -t $SWAGGER:$COMMIT
+    docker tag $SWAGGER:$COMMIT $REPO/$SWAGGER:$TAG
+    docker push $REPO/$SWAGGER:$TAG
+    # nginx
+    docker build $NGINX_REPO -t $NGINX:$COMMIT
+    docker tag $NGINX:$COMMIT $REPO/$NGINX:$TAG
+    docker push $REPO/$NGINX:$TAG
+  fi
 fi
