@@ -12,7 +12,7 @@ then
         aws --version
         aws configure set default.region us-east-1
         aws configure set default.output json
-        echo "AWS Configured!"
+        echo "AWS Configured!!"
     }
 
     make_task_def() {
